@@ -36,6 +36,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
         viewHolder.username.setText(usernameList.get(i));
+        viewHolder.password.setText(passwordList.get(i));
 
     }
 

@@ -52,74 +52,70 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Context context;
-        new getData().execute();
-    }
+        Context context = getApplicationContext();
 
-    private class getData extends android.os.AsyncTask<String, String, String> {
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            Log.i("data1",String.valueOf(s));
-            try {
-                JSONArray data = new JSONArray(s);
-                JSONObject obj = data.getJSONObject(0);
-                Log.i("HASIL", obj.getString("username"));
-            } catch (JSONException e) {
-                e.printStackTrace();
+        RequestQueue queue = Volley.newRequestQueue(context);
+        String url = "http://taqi1.localhost.run/users";
+        final TextView textView = findViewById(R.id.tv);
+        StringRequest stringRequest = new StringRequest(url, new com.android.volley.Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.i("KONTOL", response);
+                try {
+                    JSONArray data = new JSONArray(response);
+                    for (int i = 0; i < data.length(); i++) {
+                        JSONObject result = data.getJSONObject(i);
+                        String username = result.optString("username");
+                        String password = result.optString("password");
+                        usernameList.add(username);
+                        passwordList.add(password);
+                        Log.i("HASILCUI", username);
+                    }
+                    RecyclerView recyclerView = findViewById(R.id.recyclerView);
+                    RecyclerViewAdapter adapter = new RecyclerViewAdapter(usernameList, passwordList, getApplicationContext());
+                    recyclerView.setAdapter(adapter);
+                    recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.i("KONTOL", String.valueOf(error));
+
+            }
+        });
+
+
+        stringRequest.setRetryPolicy(new RetryPolicy() {
+            @Override
+            public int getCurrentTimeout() {
+                return 50000;
             }
 
-            RecyclerView recyclerView = findViewById(R.id.recyclerView);
-            RecyclerViewAdapter adapter = new RecyclerViewAdapter(usernameList, passwordList, getApplicationContext());
-            recyclerView.setAdapter(adapter);
-            recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-        }
+            @Override
+            public int getCurrentRetryCount() {
+                return 50000;
+            }
 
-        @Override
-        protected String doInBackground(String... strings) {
-            final String[] result = new String[1];
-            Context context = getApplicationContext();
-            RequestQueue queue = Volley.newRequestQueue(context);
-            String url = "http://taqi.localhost.run/users";
-            final TextView textView = findViewById(R.id.tv);
-            StringRequest stringRequest = new StringRequest(url, new com.android.volley.Response.Listener<String>() {
-                @Override
-                public void onResponse(String response) {
-                    Log.i("KONTOL", response);
-                    result[0] = response;
+            @Override
+            public void retry(VolleyError error) throws VolleyError {
 
-                }
-            }, new com.android.volley.Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.i("KONTOL", String.valueOf(error));
-
-                }
-            });
+            }
+        });
+        usernameList.add("w");
+        passwordList.add("a");
+        queue.add(stringRequest);
 
 
-            stringRequest.setRetryPolicy(new RetryPolicy() {
-                @Override
-                public int getCurrentTimeout() {
-                    return 50000;
-                }
-
-                @Override
-                public int getCurrentRetryCount() {
-                    return 50000;
-                }
-
-                @Override
-                public void retry(VolleyError error) throws VolleyError {
-
-                }
-            });
-            usernameList.add("w");
-            passwordList.add("a");
-            queue.add(stringRequest);
-            return String.valueOf(result);
-        }
     }
+
+
 
 }
 
